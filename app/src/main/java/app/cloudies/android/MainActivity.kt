@@ -41,6 +41,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.work.WorkInfo
 import app.cloudies.android.storage.*
+import app.cloudies.android.myfiles.MyFilesBridge
+import app.cloudies.android.myfiles.MyFilesSetupCard
+import app.cloudies.android.myfiles.MyFilesSetupDialog
 import com.google.android.gms.auth.api.identity.AuthorizationRequest
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.common.api.Scope
@@ -51,13 +54,18 @@ private val Teal = Color(0xFF72E4CD)
 class MainActivity : ComponentActivity() {
     private val viewModel: CloudViewModel by viewModels()
     private var sharedUris by mutableStateOf<List<Uri>>(emptyList())
+    private var myFilesSetup by mutableStateOf(false)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         readShared(intent)
-        setContent { CloudiesScreen(viewModel, sharedUris, { sharedUris = emptyList() }, ::openFile) }
+        myFilesSetup = intent.getBooleanExtra(MyFilesBridge.OPEN_SETUP, false)
+        setContent { CloudiesScreen(viewModel, sharedUris, { sharedUris = emptyList() }, myFilesSetup, { myFilesSetup = it }, ::openFile) }
     }
-    override fun onNewIntent(intent: Intent) { super.onNewIntent(intent); setIntent(intent); readShared(intent) }
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent); setIntent(intent); readShared(intent)
+        if (intent.getBooleanExtra(MyFilesBridge.OPEN_SETUP, false)) myFilesSetup = true
+    }
     @Suppress("DEPRECATION")
     private fun readShared(intent: Intent) {
         sharedUris = when(intent.action) {
@@ -82,7 +90,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-private fun CloudiesScreen(vm: CloudViewModel, sharedUris: List<Uri>, clearShared: () -> Unit, open: (String, CloudFile, Boolean) -> Unit) {
+private fun CloudiesScreen(vm: CloudViewModel, sharedUris: List<Uri>, clearShared: () -> Unit, myFilesSetup: Boolean, showMyFilesSetup: (Boolean) -> Unit, open: (String, CloudFile, Boolean) -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val activity = context as MainActivity
     val state by vm.state.collectAsStateWithLifecycle()
@@ -181,6 +189,7 @@ private fun CloudiesScreen(vm: CloudViewModel, sharedUris: List<Uri>, clearShare
                             }
                         }
                         item { Card(onClick = { vm.showOffline(); page = 1 }) { ListItem(headlineContent = { Text("Available offline") }, supportingContent = { Text("Files you chose to keep on this phone") }, leadingContent = { Icon(Icons.Outlined.OfflinePin, null) }, trailingContent = { Icon(Icons.Outlined.ChevronRight, null) }) } }
+                        item { MyFilesSetupCard { showMyFilesSetup(true) } }
                         item { Text("No ads. No Cloudies subscription. Your storage provider's free limits still apply.", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant) }
                     }
                     1 -> {
@@ -216,6 +225,7 @@ private fun CloudiesScreen(vm: CloudViewModel, sharedUris: List<Uri>, clearShare
                     }
                     else -> LazyColumn(contentPadding = PaddingValues(20.dp, 10.dp, 20.dp, 35.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         item { Text("Make it yours", fontSize = 26.sp, fontWeight = FontWeight.Bold) }
+                        item { MyFilesSetupCard { showMyFilesSetup(true) } }
                         item { Text("CONNECTIONS", style = MaterialTheme.typography.labelMedium, color = scheme.primary) }
                         items(state.connections, key = { it.id }) { account -> Card { ListItem(headlineContent = { Text(account.name) }, supportingContent = { Text(if(account.kind == "drive") "Cloudies folder only" else account.endpoint, maxLines = 2, overflow = TextOverflow.Ellipsis) }, leadingContent = { Icon(Icons.Outlined.Cloud, null) }, trailingContent = { IconButton(onClick = { disconnect = account }) { Icon(Icons.Outlined.LinkOff, "Disconnect account") } }) } }
                         item { OutlinedButton(onClick = { connect = true }, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Outlined.Add, null); Text("Connect a cloud account") } }
@@ -223,12 +233,13 @@ private fun CloudiesScreen(vm: CloudViewModel, sharedUris: List<Uri>, clearShare
                         item { Card { ListItem(headlineContent = { Text("Streaming buffer") }, supportingContent = { Text("Up to 16 MB in RAM. Streamed content is not saved to disk by Cloudies.") }, trailingContent = { TextButton(onClick = { vm.clearBuffer() }) { Text("Clear") } }) } }
                         item { Card { Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) { Text("Your privacy", fontWeight = FontWeight.Bold); Text("Cloud connections use HTTPS. Saved account credentials are encrypted with Android Keystore. Your provider can still access ordinary uploaded files; file end-to-end encryption is planned and is not enabled in this version.", style = MaterialTheme.typography.bodySmall); Text("Cloudies does not automatically delete originals. Other apps may save their own local copies when you open or share a cloud file.", style = MaterialTheme.typography.bodySmall) } } }
                         item { TextButton(onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/akggautamasar/Cloudies#readme"))) }) { Text("Setup, free storage options & source code ↗") } }
-                        item { Text("Cloudies 0.1.0 · Personal edition\nMade for your own cloud accounts.", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant) }
+                        item { Text("Cloudies 0.2.0 · Personal edition\nMade for your own cloud accounts.", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant) }
                     }
                 }
             }
         }
         if(connect) ConnectionDialog(state.busy, { connect = false }, { name, url, user, pass -> vm.connectWebDav(name, url, user, pass) { connect = false; page = 1 } }, { google() })
+        if(myFilesSetup) MyFilesSetupDialog(state.connections.isNotEmpty()) { showMyFilesSetup(false) }
         if(createFolder) NameDialog("New folder", "", { createFolder = false }) { name -> vm.folder(name); createFolder = false }
         editName?.let { file -> NameDialog("Rename file", file.name, { editName = null }) { name -> vm.rename(file, name); editName = null } }
         actionFile?.let { file ->

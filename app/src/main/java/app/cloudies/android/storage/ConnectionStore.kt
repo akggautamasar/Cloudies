@@ -13,8 +13,8 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
 /** Credentials are encrypted with a non-exportable Android Keystore key. */
-class ConnectionStore(context: Context) {
-    private val preferences = context.getSharedPreferences("connections", Context.MODE_PRIVATE)
+class ConnectionStore(context: Context, preferenceName: String = "connections") {
+    private val preferences = context.getSharedPreferences(preferenceName, Context.MODE_PRIVATE)
     private fun key(): SecretKey {
         val store = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
         (store.getKey("cloudies.credentials.v1", null) as? SecretKey)?.let { return it }

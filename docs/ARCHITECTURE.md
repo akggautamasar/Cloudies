@@ -14,6 +14,24 @@ Cloudies is an Android application. There is no required application backend or 
 | `CloudDocumentsProvider` | Android system picker and read-only seekable file descriptors |
 | Media3 | Stream playback through content URIs; fit video without cropping |
 | WorkManager | Durable transfer requests, network constraints, foreground progress |
+| `myfiles/LoopbackFtpServer` | Read-only localhost FTP for Samsung My Files Network storage |
+| `myfiles/MyFilesBridgeService` | Explicit session with Stop notification and idle/system timeout handling |
+
+## Samsung My Files
+
+v0.2 adds a one-time setup panel on Home and Settings. A non-exported `dataSync`
+foreground service exposes the virtual account tree over password-protected
+FTP on `127.0.0.1:2121`. Passive data sockets are also loopback-only. It uses
+the shared range cache and current cloud clients; provider credentials stay
+private. There are no mutation methods in the bridge filesystem. Active FTP,
+uploads, rename and delete commands are refused. The service stops on explicit
+Stop, 15 minutes of inactivity, process termination or the Android service
+timeout, and never restarts automatically. A saved network location and any
+favourite/main-screen shortcut require user actions in Samsung My Files.
+This does not register a Samsung built-in cloud tile.
+
+See [Samsung My Files setup](SAMSUNG_MY_FILES.md) for behavior, privacy boundaries
+and device verification limits.
 
 ## Upload
 

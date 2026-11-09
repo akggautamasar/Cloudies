@@ -4,6 +4,21 @@ A personal Android cloud-file app inspired by the **files-on-demand** idea in [H
 
 Cloudies connects directly to **your own storage accounts**. There is no Cloudies storage subscription, hosted application server, advertising, or analytics SDK. Your provider's storage and transfer limits still apply.
 
+## New in v0.2: Samsung My Files
+
+Open **Samsung My Files** on Cloudies Home or Settings to start a local connection
+and follow the one-time setup. Save it in **My Files → Network storage → + → FTP
+server**, named **Cloudies**, to browse, open and copy files from your connected
+accounts. The setup panel provides the address, port, generated password and an
+Open My Files button. A favourite/main-screen shortcut depends on Samsung's
+available options; Cloudies cannot insert a built-in cloud tile automatically.
+
+This connection is **read-only** and listens only on this phone. Upload through
+**Share → Cloudies**. It stops after 15 idle minutes or when Android stops the
+service. My Files may download its own local copy when opening a cloud file.
+Device compatibility still needs verification on your Samsung/One UI version.
+See the [setup guide and limits](docs/SAMSUNG_MY_FILES.md).
+
 ## What the first version does
 
 - Connect HTTPS WebDAV accounts: Koofr, Nextcloud, pCloud, and compatible servers.
@@ -17,7 +32,7 @@ Cloudies connects directly to **your own storage accounts**. There is no Cloudie
 - Choose light, dark, or device appearance.
 - Encrypt saved connection credentials with Android Keystore; require HTTPS; disable Android backup of application data.
 
-**Current limits:** Upload retries restart the upload. File contents are **not yet end-to-end encrypted**. File-picker access is read-only; external editors cannot save back through the provider yet. There is no automatic camera backup, public link service, universal Samsung My Files integration, or automatic removal of originals. These are not represented as working features.
+**Current limits:** Upload retries restart the upload. File contents are **not yet end-to-end encrypted**. File-picker and My Files network access are read-only; external editors cannot save back through the provider yet. There is no automatic camera backup, public link service, automatic Samsung cloud tile, or automatic removal of originals. These are not represented as working features.
 
 Streaming content uses a globally bounded **16 MiB RAM buffer** and is not written to disk by Cloudies. App code, the file index, explicit offline files, and interrupted offline downloads do use local storage. Other apps may download their own copy when opening or sharing a file. This does not expand the phone's physical storage or let Android applications run from cloud storage.
 
