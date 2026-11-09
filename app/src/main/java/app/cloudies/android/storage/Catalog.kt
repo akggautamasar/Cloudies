@@ -46,6 +46,9 @@ class Catalog(private val context: Context) : SQLiteOpenHelper(context, "cloudie
         File(file.path + ".part").delete(); File(file.path + ".version").delete()
         writableDatabase.delete("entries", "connection=? AND id=?", arrayOf(connection, id))
     }
+    fun removeMetadata(connection: String, id: String) {
+        writableDatabase.delete("entries", "connection=? AND id=?", arrayOf(connection, id))
+    }
     fun forget(connection: String) {
         readableDatabase.query("entries", arrayOf("id"), "connection=?", arrayOf(connection), null, null, null).use { cursor ->
             while (cursor.moveToNext()) {

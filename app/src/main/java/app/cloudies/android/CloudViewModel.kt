@@ -127,7 +127,8 @@ class CloudViewModel(application: Application) : AndroidViewModel(application) {
             if (file.id != updated.id) {
                 val oldOffline = app.catalog.offlineFile(connection.id, file.id)
                 if (oldOffline.isFile && oldOffline.renameTo(app.catalog.offlineFile(connection.id, updated.id))) app.catalog.markOffline(connection.id, updated.id)
-                app.catalog.remove(connection.id, file.id)
+                if (file.directory) app.catalog.removeMetadata(connection.id, file.id)
+                else app.catalog.remove(connection.id, file.id)
             }
             app.ranges.clear(); refresh()
         }
