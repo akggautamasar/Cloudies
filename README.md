@@ -57,7 +57,7 @@ For Nextcloud, copy your own WebDAV address from Files settings, commonly `https
 Requirements: JDK 17, Android SDK Platform 35, Build Tools 35.0.0, Gradle 8.11.1. Android Studio can install the SDK components. The project pins Android Gradle Plugin 8.9.2 and Kotlin 2.1.20.
 
 ```bash
-gradle testDebugUnitTest lintDebug assembleDebug
+./gradlew testDebugUnitTest lintDebug assembleDebug
 ```
 
 The debug APK is produced at `app/build/outputs/apk/debug/app-debug.apk`. The [Android APK workflow](.github/workflows/android.yml) runs on pushes and pull requests and uploads an APK artifact. Standard GitHub-hosted runners are [free for public repositories](https://docs.github.com/en/actions/concepts/billing-and-usage); larger runners and additional storage can be charged. Artifacts expire after seven days.
@@ -70,7 +70,7 @@ export CLOUDIES_KEYSTORE=/absolute/path/to/your/cloudies.jks
 export CLOUDIES_STORE_PASSWORD=...
 export CLOUDIES_KEY_ALIAS=cloudies
 export CLOUDIES_KEY_PASSWORD=...
-gradle testDebugUnitTest lintRelease assembleRelease
+./gradlew testDebugUnitTest lintRelease assembleRelease
 ```
 
 Install the signed APK directly on your own Samsung device; a public Play Store listing is unnecessary for personal use. Samsung Auto Blocker or Android install-source settings may require an explicit installation decision. Android also offers [free limited distribution](https://developer.android.com/developer-verification/guides/limited-distribution) for personal and hobby projects.
